@@ -1,3 +1,5 @@
+import securityConfig from './next.config.security.js';
+
 let userConfig = undefined
 try {
   userConfig = await import('./v0-user-next.config')
@@ -7,6 +9,7 @@ try {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  ...securityConfig,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -20,6 +23,26 @@ const nextConfig = {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
+  },
+  webpack: (config) => {
+    // Enhance webpack security settings
+    config.optimization = {
+      ...config.optimization,
+      minimize: true,
+      sideEffects: true
+    };
+    
+    // Add security headers to webpack config
+    config.headers = async () => {
+      return [
+        {
+          source: '/:path*',
+          headers: securityConfig.headers,
+        },
+      ];
+    };
+
+    return config;
   },
 }
 
