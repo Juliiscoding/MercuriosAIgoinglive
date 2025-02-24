@@ -1,15 +1,5 @@
-import securityConfig from './next.config.security.js';
-
-let userConfig = undefined
-try {
-  userConfig = await import('./v0-user-next.config')
-} catch (e) {
-  // ignore error
-}
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  ...securityConfig,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -19,53 +9,31 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  experimental: {
-    webpackBuildWorker: true,
-    parallelServerBuildTraces: true,
-    parallelServerCompiles: true,
-  },
-  webpack: (config) => {
-    // Enhance webpack security settings
-    config.optimization = {
-      ...config.optimization,
-      minimize: true,
-      sideEffects: true
-    };
-    
-    // Add security headers to webpack config
-    config.headers = async () => {
-      return [
-        {
-          source: '/:path*',
-          headers: securityConfig.headers,
-        },
-      ];
-    };
-
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        crypto: false,
+      };
+    }
     return config;
   },
-}
-
-mergeConfig(nextConfig, userConfig)
-
-function mergeConfig(nextConfig, userConfig) {
-  if (!userConfig) {
-    return
+  async headers() {
+    return [
+      {
+        source: '/api/:path*',
+        headers: [
+          { key: 'Access-Control-Allow-Credentials', value: 'true' },
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET,DELETE,PATCH,POST,PUT' },
+          { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version' },
+        ],
+      },
+    ];
   }
+};
 
-  for (const key in userConfig) {
-    if (
-      typeof nextConfig[key] === 'object' &&
-      !Array.isArray(nextConfig[key])
-    ) {
-      nextConfig[key] = {
-        ...nextConfig[key],
-        ...userConfig[key],
-      }
-    } else {
-      nextConfig[key] = userConfig[key]
-    }
-  }
-}
-
-export default nextConfig
+export default nextConfig;
