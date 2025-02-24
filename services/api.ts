@@ -249,5 +249,11 @@ export class ApiClient {
   }
 }
 
-export const api = ApiClient.getInstance()
+export async function fetchDashboardMetrics(): Promise<DashboardMetrics> {
+  const client = ApiClient.getInstance();
+  const response = await client.get('/dashboard/metrics');
+  return response.data;
+}
+
+export const api = ApiClient.getInstance();
 export type { DashboardMetrics }
