@@ -31,7 +31,8 @@ export const ENDPOINTS = {
   CATEGORY: "/api/v2/category",
   STAFF: "/api/v2/staff",
   ARTICLE: "/api/v2/article",
-  BRANCH: "/api/v2/branch"
+  BRANCH: "/api/v2/branch",
+  SALES: "/api/v2/sales"
 }
 
 class ApiClient {
@@ -231,4 +232,30 @@ export async function fetchSaleByNumber(number: number): Promise<Sale> {
   }
 }
 
-export default apiClient
+// API Functions
+export async function fetchCategories() {
+  const response = await apiClient.axiosInstance.get(ENDPOINTS.CATEGORY);
+  return response.data;
+}
+
+export async function fetchCustomers() {
+  const response = await apiClient.axiosInstance.get(ENDPOINTS.CUSTOMER);
+  return response.data;
+}
+
+export async function fetchSuppliers() {
+  const response = await apiClient.axiosInstance.get(ENDPOINTS.SUPPLIER);
+  return response.data;
+}
+
+export async function fetchOrders() {
+  const response = await apiClient.axiosInstance.get('/api/v2/order');
+  return response.data;
+}
+
+export async function fetchEmployees() {
+  const response = await apiClient.axiosInstance.get(ENDPOINTS.STAFF);
+  return response.data;
+}
+
+export default apiClient;
